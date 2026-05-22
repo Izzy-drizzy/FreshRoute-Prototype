@@ -1,0 +1,618 @@
+/* FreshRoute design tokens — sourced from Figma */
+:root {
+  --green-deep: rgb(28, 92, 66);
+  --green-deep-border: rgb(14, 89, 58);
+  --green-shadow: rgb(55, 106, 86);
+  --green-tinted: rgb(156, 175, 166);
+  --lime: rgb(220, 255, 101);
+  --lime-shadow: rgb(103, 138, 0);
+  --bg: rgb(242, 255, 242);
+  --card-pale: rgb(233, 255, 230);
+  --card-mid: rgb(201, 230, 196);
+  --border-sage: rgb(131, 154, 130);
+  --text-dark: rgb(48, 62, 56);
+  --text-mid: rgb(102, 102, 102);
+  --text-soft: rgb(131, 154, 130);
+  --check-green: rgb(5, 150, 105);
+
+  --font-display: "Crimson Pro", "Crimson Text", Georgia, serif;
+  --font-body: "Switzer", "Switzer Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-ui: "Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: var(--font-body);
+  background: #0f1714;
+  color: var(--text-dark);
+  overflow: hidden;
+}
+
+/* Stage — centered iPhone in dark room ------------------------------ */
+.stage {
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  background:
+    radial-gradient(circle at 50% 40%, #1a2723 0%, #0a100e 70%);
+}
+
+/* iPhone frame ------------------------------------------------------- */
+.phone {
+  position: relative;
+  width: 393px; height: 852px;
+  border-radius: 56px;
+  background: #000;
+  padding: 12px;
+  box-shadow:
+    0 0 0 2px #1a1a1a,
+    0 40px 80px -20px rgba(0,0,0,0.6),
+    0 20px 40px -10px rgba(0,0,0,0.4);
+}
+.phone-screen {
+  position: relative;
+  width: 100%; height: 100%;
+  border-radius: 44px;
+  overflow: hidden;
+  background: var(--bg);
+  isolation: isolate;
+}
+.phone-notch {
+  position: absolute;
+  top: 14px; left: 50%; transform: translateX(-50%);
+  width: 104px; height: 29px;
+  border-radius: 39px;
+  background: #000;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* Status bar inside the screen */
+.statusbar {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 49px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 24px;
+  font-family: "SF Pro Text", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 700;
+  z-index: 50;
+  color: #000;
+  pointer-events: none;
+}
+.statusbar .time { font-size: 15px; letter-spacing: 0.2px; }
+.statusbar .icons { font-size: 13px; letter-spacing: 1px; display: flex; gap: 4px; align-items: center; }
+.statusbar.on-dark { color: #fff; }
+
+/* Screens — stack -------------------------------------------------- */
+.screen {
+  position: absolute; inset: 0;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.screen-body {
+  position: absolute; inset: 49px 0 0 0;
+  display: flex; flex-direction: column;
+}
+
+/* Buttons — pill, hard-shadow style -------------------------------- */
+.btn {
+  position: relative;
+  height: 50px;
+  border-radius: 46px;
+  border: 1px solid var(--green-deep-border);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--font-body);
+  font-size: 14px; letter-spacing: 0.14px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 120ms cubic-bezier(.2,.7,.3,1), box-shadow 120ms;
+  padding: 0 20px;
+  white-space: nowrap;
+}
+.btn:active { transform: translate(3px, 4px); box-shadow: 0 0 0 0 transparent !important; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--green-deep);
+  color: #fff;
+  box-shadow: 3px 4px 0 0 var(--green-shadow);
+}
+.btn-secondary {
+  background: var(--lime);
+  color: var(--green-deep);
+  border-color: var(--green-deep);
+  box-shadow: 3px 4px 0 0 var(--lime-shadow);
+}
+.btn-tertiary {
+  background: var(--bg);
+  color: var(--green-deep);
+  border-color: var(--green-deep);
+  box-shadow: 3px 4px 0 0 var(--green-deep);
+}
+.btn-block { width: 100%; }
+.btn:hover { filter: brightness(1.04); }
+.btn-primary:hover { filter: brightness(1.08); }
+
+/* Small primary (arrow back) */
+.btn-small {
+  width: 58.4px; height: 33px;
+  border-radius: 46px;
+  background: var(--green-deep);
+  border: 1px solid var(--green-deep-border);
+  box-shadow: 3px 4px 0 0 var(--green-shadow);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 120ms cubic-bezier(.2,.7,.3,1), box-shadow 120ms;
+}
+.btn-small:active { transform: translate(3px, 4px); box-shadow: none; }
+.btn-small svg { width: 16px; height: 14px; }
+
+/* Headings ---------------------------------------------------------- */
+.h-hero {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 36px;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  color: var(--green-deep);
+  text-wrap: pretty;
+}
+.h-section {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 0.972;
+  letter-spacing: -0.04em;
+  color: var(--green-deep);
+}
+.h-card {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+  color: var(--green-deep);
+}
+
+.body-sm { font-family: var(--font-ui); font-size: 14px; line-height: 1.4; color: var(--text-mid); }
+.caption { font-family: var(--font-ui); font-size: 12px; color: var(--text-soft); font-weight: 700; }
+
+/* Checklist tile --------------------------------------------------- */
+.tile {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--green-deep);
+  background: var(--card-pale);
+  padding: 20px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer;
+  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease, transform 120ms;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--green-deep);
+  letter-spacing: 0.14px;
+  min-height: 62px;
+}
+.tile:active { transform: scale(0.985); }
+.tile.checked {
+  background: var(--green-deep);
+  color: #fff;
+  border-color: var(--green-tinted);
+}
+.tile-checkbox {
+  width: 20px; height: 20px;
+  border-radius: 3px;
+  border: 1px solid var(--green-deep);
+  display: flex; align-items: center; justify-content: center;
+  flex: 0 0 auto;
+  background: transparent;
+  transition: background 180ms, border-color 180ms;
+}
+.tile.checked .tile-checkbox {
+  background: var(--lime);
+  border-color: var(--check-green);
+}
+.tile-checkbox svg { opacity: 0; transition: opacity 160ms 80ms; }
+.tile.checked .tile-checkbox svg { opacity: 1; }
+.tile-rank-img {
+  width: 24px; height: 24px;
+  margin-right: 12px;
+  flex: 0 0 auto;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 180ms, transform 220ms cubic-bezier(.2,1.6,.4,1);
+  display: block;
+}
+.tile.checked .tile-rank-img { opacity: 1; transform: scale(1); }
+
+/* Time-of-day tile (icon variant) */
+.tile-time { padding: 20px 16px; min-height: 80px; }
+.tile-time .row { display: flex; align-items: center; gap: 20px; flex: 1; }
+.tile-time .ti-icon {
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  background: transparent !important;
+}
+.tile-time .ti-text { display: flex; flex-direction: column; gap: 4px; }
+.tile-time .ti-title { font-size: 14px; line-height: 1; }
+.tile-time .ti-sub { font-size: 12px; line-height: 1; font-weight: 300; opacity: 0.85; }
+
+/* Step progress bars */
+.steps { display: flex; gap: 8px; }
+.step-bar {
+  height: 8px; flex: 1;
+  border-radius: 33px;
+  background: rgba(28,92,66,0.18);
+  overflow: hidden;
+  position: relative;
+}
+.step-bar::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: var(--green-deep);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 480ms cubic-bezier(.2,.7,.2,1);
+}
+.step-bar.done::after { transform: scaleX(1); }
+.step-bar.active::after { transform: scaleX(1); }
+
+/* Slot cards (Flow 1) */
+.slot-card {
+  border-radius: 8px;
+  padding: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--font-body);
+  font-size: 14px;
+  letter-spacing: 0.14px;
+  cursor: pointer;
+  transition: transform 120ms, background 200ms, border-color 200ms, color 200ms;
+  border: 1px solid var(--border-sage);
+}
+.slot-card.unavailable {
+  background: var(--green-deep);
+  color: #fff;
+  border-color: var(--green-deep);
+  cursor: not-allowed;
+  opacity: 0.92;
+}
+.slot-card.available {
+  background: var(--card-pale);
+  color: var(--text-dark);
+  border-color: var(--border-sage);
+}
+.slot-card.selected {
+  background: var(--lime);
+  color: var(--green-deep);
+  border-color: var(--green-deep);
+  transform: translateY(-1px);
+  box-shadow: 3px 4px 0 0 var(--lime-shadow);
+}
+.slot-card:hover:not(.unavailable) { filter: brightness(1.02); }
+.slot-card:active:not(.unavailable) { transform: scale(0.99); }
+
+/* Day pill (Flow 1) */
+.day-pill {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 40px;
+  border-radius: 24px;
+  background: var(--card-pale);
+  border: 1px solid var(--border-sage);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background 200ms, color 200ms, border-color 200ms;
+  letter-spacing: 0.5px;
+}
+.day-pill.active {
+  background: var(--lime);
+  border-color: var(--green-deep);
+  color: var(--green-deep);
+}
+.day-pill.today {
+  background: var(--lime);
+  border-color: var(--green-deep);
+  color: var(--green-deep);
+}
+
+/* Toggle pill (1-Hour / 2-Hour) */
+.toggle-2 {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  border-radius: 38px;
+  background: var(--green-deep);
+  display: flex;
+  padding: 4px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.toggle-2-knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  height: calc(100% - 8px);
+  width: calc(50% - 4px);
+  border-radius: 31px;
+  background: var(--card-pale);
+  transition: transform 320ms cubic-bezier(.4,1.2,.4,1);
+  will-change: transform;
+}
+.toggle-2-opt {
+  flex: 1;
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-body);
+  font-size: 14px;
+  letter-spacing: 0.14px;
+  font-weight: 500;
+  transition: color 220ms;
+  height: 100%;
+}
+
+/* Chips */
+.chip {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 20px;
+  display: inline-flex; align-items: center;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  cursor: pointer;
+  background: var(--green-deep);
+  color: #fff;
+  border: 1px solid var(--green-deep);
+  transition: background 180ms, color 180ms;
+}
+.chip.off {
+  background: var(--card-pale);
+  color: var(--text-dark);
+}
+
+/* Pref badge */
+.pref-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 32px;
+  padding: 0 13px 0 11px;
+  border-radius: 22px;
+  background: var(--green-deep);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.pref-badge .ico { width: 16px; height: 16px; display: grid; place-items: center; }
+.pref-badge.lime {
+  background: var(--lime);
+  color: var(--green-deep);
+  letter-spacing: 0;
+  text-transform: none;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 12px;
+}
+
+/* Big card containers */
+.card-pref {
+  border-radius: 12px;
+  background: var(--card-pale);
+  border: 2px solid var(--green-deep);
+  padding: 20px;
+  display: flex; flex-direction: column;
+  gap: 20px;
+}
+.card-pref-dark {
+  border-radius: 12px;
+  background: var(--green-deep);
+  border: 2px solid var(--green-deep);
+  padding: 19px 20px 26px;
+  display: flex; flex-direction: column;
+  gap: 20px;
+  color: #fff;
+}
+
+/* Filter sheet */
+.sheet-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(28, 92, 66, 0.35);
+  backdrop-filter: blur(2px);
+  z-index: 60;
+  opacity: 0;
+  transition: opacity 260ms ease;
+  pointer-events: none;
+}
+.sheet-backdrop.show { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: var(--bg);
+  border-radius: 24px 24px 0 0;
+  padding: 22px 20px 26px;
+  z-index: 70;
+  transform: translateY(100%);
+  transition: transform 360ms cubic-bezier(.2,.8,.2,1);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+  max-height: 78%;
+  overflow: auto;
+}
+.sheet.show { transform: translateY(0); }
+.sheet-handle {
+  width: 38px; height: 4px; border-radius: 2px;
+  background: var(--border-sage);
+  margin: 0 auto 14px;
+}
+
+/* Screen fade — transform only so content always visible */
+@keyframes screenIn { 
+  0% { transform: translateX(14px) scale(0.99); } 
+  100% { transform: none; } 
+}
+.screen-fade { animation: screenIn 320ms cubic-bezier(.2,.8,.2,1); }
+
+/* Page transition (enter/exit) */
+.fade-enter { opacity: 0; transform: translateX(24px); }
+.fade-enter-active { opacity: 1; transform: none; transition: opacity 320ms ease, transform 320ms cubic-bezier(.2,.8,.2,1); }
+.fade-exit { opacity: 1; transform: none; }
+.fade-exit-active { opacity: 0; transform: translateX(-24px); transition: opacity 240ms ease, transform 240ms cubic-bezier(.2,.8,.2,1); }
+
+/* Splash floating dots */
+.splash {
+  position: absolute; inset: 0;
+  background: var(--green-deep);
+  color: var(--lime);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.splash-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(220,255,101,0.08);
+  filter: blur(1px);
+  animation: floaty 8s ease-in-out infinite;
+}
+@keyframes floaty {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50% { transform: translate(20px,-30px) scale(1.1); }
+}
+.splash-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 60px;
+  letter-spacing: -0.04em;
+  color: var(--lime);
+  line-height: 1;
+}
+.splash-sub {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 20px;
+  color: rgb(233, 255, 230);
+  letter-spacing: -0.02em;
+  margin-top: 8px;
+}
+
+/* spinner */
+.spinner {
+  width: 24px; height: 24px;
+  border: 2.5px solid rgba(220,255,101,0.18);
+  border-top-color: var(--lime);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Confetti / sparkle */
+.sparkle {
+  position: absolute;
+  pointer-events: none;
+  font-size: 22px;
+  opacity: 0;
+  animation: sparkle 1.6s ease-out forwards;
+}
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  20% { opacity: 1; transform: scale(1) rotate(15deg); }
+  100% { opacity: 0; transform: scale(0.7) translateY(-30px) rotate(60deg); }
+}
+
+/* Confirmation timer ring */
+.timer-bar {
+  position: relative;
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(28,92,66,0.18);
+  overflow: hidden;
+}
+.timer-bar > span {
+  position: absolute; inset: 0;
+  background: var(--green-deep);
+  transform-origin: left;
+  transition: transform 800ms linear;
+}
+
+/* Tweaks helpers */
+.tweaks-wrap { position: fixed; right: 18px; bottom: 18px; z-index: 9999; }
+
+/* Skip-button label needs to be Segoe-styled when text override */
+.label-mono { font-family: var(--font-ui); font-weight: 700; font-size: 12px; color: var(--text-soft); }
+
+/* Image hero (welcome / complete / error) */
+.hero-img {
+  width: 100%;
+  border-radius: 20px;
+  border: 0.5px solid var(--border-sage);
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: multiply;
+}
+.hero-img::before {
+  content: ""; display: block; padding-bottom: 109%;
+}
+
+/* utility */
+.row { display: flex; align-items: center; }
+.col { display: flex; flex-direction: column; }
+
+/* Up arrow icon button (Flow 1 - 'next slot' card) */
+.icon-btn {
+  width: 42px; height: 42px;
+  border-radius: 16px;
+  background: var(--green-deep);
+  display: grid; place-items: center;
+  color: var(--lime);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid var(--green-deep);
+}
+
+/* Filter chip with sublabel */
+.chip-stack {
+  padding: 11px 24px;
+  border-radius: 38px;
+  background: var(--green-deep);
+  color: #fff;
+  display: flex; flex-direction: column; gap: 2px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 300;
+  cursor: pointer;
+  border: 1px solid var(--green-deep);
+}
+.chip-stack.off { background: var(--card-pale); color: var(--text-dark); border-color: var(--green-deep); }
+.chip-stack .sub { font-size: 12px; color: var(--lime); font-weight: 300; }
+.chip-stack.off .sub { color: var(--text-soft); }
+
+/* Mobile: drop the iPhone frame and fill the viewport --------------- */
+@media (max-width: 600px) {
+  .stage {
+    background: var(--bg);
+    place-items: stretch;
+  }
+  .phone {
+    width: 100%;
+    height: 100dvh;
+    border-radius: 0;
+    background: var(--bg);
+    padding: 0;
+    box-shadow: none;
+  }
+  .phone-screen {
+    border-radius: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .phone-notch { display: none; }
+  .statusbar { display: none; }
+  .screen-body { inset: 0; }
+}

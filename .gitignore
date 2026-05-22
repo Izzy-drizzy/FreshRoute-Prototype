@@ -1,0 +1,14 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Local logs / temp
+*.log
+.tmp/
+
+# Claude Code personal settings (keep .claude/launch.json shared)
+.claude/settings.local.json
