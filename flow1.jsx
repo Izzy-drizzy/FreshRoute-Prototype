@@ -61,7 +61,7 @@ function F1Landing({ onBook, onBrowse, onBack }) {
           </div>
 
           <div style={{ display: "flex", gap: 12 }}>
-            <BtnSecondary style={{ flex: 1 }} onClick={onBrowse}>Browse all Slots</BtnSecondary>
+            <BtnTertiary style={{ flex: 1 }} onClick={onBrowse}>Browse all Slots</BtnTertiary>
             <BtnPrimary style={{ flex: 1 }} onClick={onBook}>Book This Slot</BtnPrimary>
           </div>
         </div>
@@ -289,7 +289,7 @@ function F1FiltersSheet({ open, onClose, onApply }) {
               {total} {total === 1 ? "filter" : "filters"} applied
             </div>
             <div style={{ display: "flex", gap: 12 }}>
-              <BtnSecondary style={{ flex: 1 }} onClick={() => {setHideUnavail(true);setTod(new Set());setSpecial(new Set());}}>Reset</BtnSecondary>
+              <BtnTertiary style={{ flex: 1 }} onClick={() => {setHideUnavail(true);setTod(new Set());setSpecial(new Set());}}>Reset</BtnTertiary>
               <BtnPrimary style={{ flex: 1 }} onClick={onApply}>Apply</BtnPrimary>
             </div>
           </div>
@@ -362,7 +362,7 @@ function F1Confirm({ slot, onChange, onCheckout, onBack, onTimeout }) {
         </div>
 
         <div style={{ display: "flex", gap: 12, marginTop: 21 }}>
-          <BtnSecondary style={{ flex: 1 }} onClick={onChange}>Change Slot</BtnSecondary>
+          <BtnTertiary style={{ flex: 1 }} onClick={onChange}>Change Slot</BtnTertiary>
           <BtnPrimary style={{ flex: 1 }} onClick={onCheckout}>Proceed to Checkout</BtnPrimary>
         </div>
       </div>
@@ -432,7 +432,7 @@ function F1Error({ onTryAgain, onBrowse, onPick, onBack }) {
           </div>
 
           <div style={{ display: "flex", gap: 18 }}>
-            <BtnSecondary style={{ flex: 1 }} onClick={onTryAgain}>Try Again</BtnSecondary>
+            <BtnTertiary style={{ flex: 1 }} onClick={onTryAgain}>Try Again</BtnTertiary>
             <BtnPrimary style={{ flex: 1 }} onClick={onBrowse}>Browse All</BtnPrimary>
           </div>
         </div>
@@ -473,7 +473,7 @@ function F1AutoLearn({ onAccept, onDecline, onBack }) {
           </div>
 
           <div style={{ display: "flex", gap: 12 }}>
-            <BtnSecondary style={{ flex: 1 }} onClick={onDecline}>No, Thanks</BtnSecondary>
+            <BtnTertiary style={{ flex: 1 }} onClick={onDecline}>No, Thanks</BtnTertiary>
             <BtnPrimary style={{ flex: 1 }} onClick={onAccept}>Keep Changes</BtnPrimary>
           </div>
         </div>

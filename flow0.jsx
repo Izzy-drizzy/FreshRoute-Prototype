@@ -68,7 +68,7 @@ function F0Welcome({ onStart, onSkip }) {
 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <BtnPrimary full onClick={onStart}>Get Started</BtnPrimary>
-            <BtnSecondary full onClick={onSkip}>Skip for Now</BtnSecondary>
+            <BtnTertiary full onClick={onSkip}>Skip for Now</BtnTertiary>
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@ function F0StepShell({ step, total, title, hint, children, onBack, onNext, nextL
         </div>
 
         <div style={{ marginTop: 36, display: "flex", gap: 18 }}>
-          <BtnSecondary style={{ flex: 1 }} onClick={onBack}>Back</BtnSecondary>
+          <BtnTertiary style={{ flex: 1 }} onClick={onBack}>Back</BtnTertiary>
           <BtnPrimary style={{ flex: 1 }} onClick={onNext} disabled={!canContinue}>{nextLabel}</BtnPrimary>
         </div>
       </div>
