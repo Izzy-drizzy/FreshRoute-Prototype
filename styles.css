@@ -626,6 +626,255 @@ body {
   line-height: 1.4;
 }
 
+/* Shop: cart pill (top-right badge) --------------------------------- */
+.cart-pill {
+  position: relative;
+  width: 38px; height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--green-deep);
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.cart-pill-count {
+  position: absolute;
+  top: -4px; right: -4px;
+  min-width: 18px; height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--green-deep);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--bg);
+}
+
+/* Shop: category chip ------------------------------------------------ */
+.shop-cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--card-pale);
+  border: 1px solid var(--border-sage);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: background 160ms, color 160ms, border-color 160ms;
+}
+.shop-cat-chip.active {
+  background: var(--green-deep);
+  border-color: var(--green-deep);
+  color: #fff;
+}
+
+/* Shop: product card (grid item) ------------------------------------ */
+.shop-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border-radius: 18px;
+  border: 1px solid var(--border-sage);
+  background: var(--card-pale);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+  font-family: var(--font-body);
+}
+.shop-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+.shop-card-thumb {
+  position: relative;
+  aspect-ratio: 1.2 / 1;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #eef9e6, #d8efd0);
+}
+.shop-card-badge {
+  position: absolute;
+  top: 8px; left: 8px;
+  background: var(--green-deep);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 3px 7px;
+  border-radius: 999px;
+}
+.shop-card-body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.shop-card-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--green-deep);
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Shop: product hero (detail page) ---------------------------------- */
+.shop-hero {
+  aspect-ratio: 1.1 / 1;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #eef9e6, #d8efd0);
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-sage);
+}
+
+/* Shop: tab screens share padding (room for the bottom nav) --------- */
+.shop-tab-body {
+  padding: 18px 16px 88px;
+  overflow-y: auto;
+}
+
+/* Shop: bottom nav --------------------------------------------------- */
+.shop-nav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  padding: 0 8px env(safe-area-inset-bottom, 0px);
+  background: #fff;
+  border-top: 1px solid var(--border-sage);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 50;
+}
+.shop-nav-item {
+  flex: 1;
+  height: 56px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-soft);
+  padding: 4px 2px;
+  transition: color 160ms;
+}
+.shop-nav-item.active { color: var(--green-deep); font-weight: 600; }
+.shop-nav-icon-wrap {
+  position: relative;
+  width: 38px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  transition: background 160ms;
+}
+.shop-nav-item.active .shop-nav-icon-wrap {
+  background: var(--card-pale);
+}
+.shop-nav-badge {
+  position: absolute;
+  top: -4px; right: 0;
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--green-deep);
+  font-size: 9px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid #fff;
+}
+.shop-nav-label { letter-spacing: 0.1px; }
+
+/* Shop: order card --------------------------------------------------- */
+.shop-order-card {
+  padding: 16px 16px;
+  border-radius: 14px;
+  background: var(--card-pale);
+  border: 1px solid var(--border-sage);
+}
+.shop-order-status {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--green-deep);
+  color: var(--lime);
+}
+
+/* Shop: profile row -------------------------------------------------- */
+.shop-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--card-pale);
+  border: 1px solid var(--border-sage);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  transition: background 140ms;
+}
+.shop-profile-row:hover { background: #ddf3d7; }
+.shop-profile-row-icon {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  background: #fff;
+  border-radius: 10px;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Shop: cart row ----------------------------------------------------- */
+.shop-cart-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: var(--card-pale);
+  border: 1px solid var(--border-sage);
+  border-radius: 14px;
+  align-items: center;
+}
+.shop-cart-thumb {
+  width: 60px; height: 60px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eef9e6, #d8efd0);
+  display: grid;
+  place-items: center;
+}
+.shop-cart-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--green-deep);
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Auto-learn prompt (centered modal overlay) ------------------------ */
 .autolearn-prompt {
   position: absolute;

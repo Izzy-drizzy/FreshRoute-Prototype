@@ -1,9 +1,10 @@
-// Root App — hub screen + Flow 0 and Flow 1 as independent paths.
+// Root App — hub + three independent flow paths.
 //
 // Routes (hash-based, works on any static host):
 //   #/         → Hub
 //   #/flow0    → Onboarding (splash → welcome → days → times → rank → complete)
-//   #/flow1    → Slot booking (landing → grid → confirm → autolearn / error)
+//   #/flow1    → Slot booking (landing → grid → confirm → success / error)
+//   #/shop     → Grocery shop (browse → product → cart → book slot or checkout)
 
 const SCREENS = [
   // Hub
@@ -12,6 +13,8 @@ const SCREENS = [
   "f0-splash", "f0-welcome", "f0-days", "f0-times", "f0-rank", "f0-complete",
   // Flow 1
   "f1-landing", "f1-grid", "f1-confirm", "f1-success", "f1-error", "f1-autolearn",
+  // Flow 2 (Shop)
+  "s-home", "s-product", "s-cart", "s-orders", "s-wishlist", "s-profile", "s-order",
 ];
 const SCREEN_LABELS = {
   "hub":         "Hub",
@@ -27,6 +30,13 @@ const SCREEN_LABELS = {
   "f1-success":  "1.4 Slot Booked",
   "f1-error":    "1.5 Slot Taken",
   "f1-autolearn":"1.6 Auto-Learn",
+  "s-home":      "2.1 Shop Home",
+  "s-product":   "2.2 Product",
+  "s-cart":      "2.3 Cart",
+  "s-orders":    "2.4 Orders",
+  "s-wishlist":  "2.5 Wishlist",
+  "s-profile":   "2.6 Profile",
+  "s-order":     "2.7 Order Placed",
 };
 
 // Resolve current hash → { mode, screen }.
@@ -35,12 +45,14 @@ function routeFromHash() {
   const h = (window.location.hash || "").replace(/^#\/?/, "").toLowerCase();
   if (h === "flow0") return { mode: "flow0", screen: "f0-splash" };
   if (h === "flow1") return { mode: "flow1", screen: "f1-landing" };
+  if (h === "shop")  return { mode: "shop",  screen: "s-home" };
   return { mode: "hub", screen: "hub" };
 }
 
 function goToHub() { window.location.hash = "#/"; }
 function goToFlow0() { window.location.hash = "#/flow0"; }
 function goToFlow1() { window.location.hash = "#/flow1"; }
+function goToShop() { window.location.hash = "#/shop"; }
 
 function App() {
   const initial = useMemo(() => routeFromHash(), []);
@@ -51,6 +63,23 @@ function App() {
   const [history, setHistory] = useState([]);
   const [weekOffset, setWeekOffset] = useState(0); // days from "today"
   const [autoLearnOpen, setAutoLearnOpen] = useState(false);
+
+  // Shop state
+  const [cart, setCart] = useState({}); // { [productId]: qty }
+  const [viewingProduct, setViewingProduct] = useState(null);
+  const cartAdd = useCallback((id, qty = 1) => {
+    setCart((c) => ({ ...c, [id]: (c[id] || 0) + qty }));
+  }, []);
+  const cartSetQty = useCallback((id, qty) => {
+    setCart((c) => ({ ...c, [id]: Math.max(1, qty) }));
+  }, []);
+  const cartRemove = useCallback((id) => {
+    setCart((c) => {
+      const next = { ...c };
+      delete next[id];
+      return next;
+    });
+  }, []);
 
   // Keep React state in sync with the URL hash (forward/back, manual edits, Hub pill).
   useEffect(() => {
@@ -118,7 +147,7 @@ function App() {
   const node = useMemo(() => {
     switch (screen) {
       case "hub":
-        return <Hub onFlow0={goToFlow0} onFlow1={goToFlow1}/>;
+        return <Hub onFlow0={goToFlow0} onFlow1={goToFlow1} onShop={goToShop}/>;
       case "f0-splash":
         return <F0Splash onDone={() => setScreen("f0-welcome")}/>;
       case "f0-welcome":
@@ -162,6 +191,7 @@ function App() {
       case "f1-success":
         return <F1Success slot={pickedSlot}
                           onContinue={() => {
+                            setCart({}); // order is done, empty the basket
                             goToHub();
                             // Let the hub fade in first, then surface the prompt.
                             setTimeout(() => setAutoLearnOpen(true), 240);
@@ -178,10 +208,44 @@ function App() {
         return <F1AutoLearn onBack={goBack}
                             onAccept={() => go("f1-grid")}
                             onDecline={() => go("f1-grid")}/>;
+
+      // Flow 2 — Shop
+      case "s-home":
+        return <ShopHome
+                 onOpenProduct={(id) => { setViewingProduct(id); go("s-product"); }}/>;
+      case "s-product":
+        return <ShopProduct productId={viewingProduct}
+                            cart={cart}
+                            onAdd={cartAdd}
+                            onBack={goBack}
+                            onOpenCart={() => go("s-cart")}/>;
+      case "s-cart":
+        return <ShopCart cart={cart}
+                         onChangeQty={cartSetQty}
+                         onRemove={cartRemove}
+                         onBookSlot={() => go("f1-grid")}
+                         onContinueShopping={() => go("s-home")}/>;
+      case "s-orders":
+        return <ShopOrders />;
+      case "s-wishlist":
+        return <ShopWishlist
+                 onOpenProduct={(id) => { setViewingProduct(id); go("s-product"); }}/>;
+      case "s-profile":
+        return <ShopProfile onOpenFlow0={goToFlow0}
+                            onOpenFlow1={goToFlow1}
+                            onSignOut={goToHub}/>;
+      case "s-order":
+        return <ShopOrderPlaced
+                 total={shopCartSubtotal(cart) + SHOP_DELIVERY_FEE -
+                        (shopCartSubtotal(cart) >= 20 ? shopCartSubtotal(cart) * 0.05 : 0)}
+                 onPickSlot={() => go("f1-grid")}
+                 onSkip={() => { setCart({}); goToHub(); }}/>;
+
       default:
         return null;
     }
-  }, [screen, mode, days, times, ranking, topPicks, pickedSlot, go, goBack, exitToFlow1]);
+  }, [screen, mode, days, times, ranking, topPicks, pickedSlot, cart, viewingProduct,
+      go, goBack, exitToFlow1, cartAdd, cartSetQty, cartRemove]);
 
   return (
     <div className="stage">
@@ -204,6 +268,13 @@ function App() {
                              onAccept={() => setAutoLearnOpen(false)}
                              onDecline={() => setAutoLearnOpen(false)}/>
 
+          {/* Shop bottom nav — only on the 5 main shop tabs. */}
+          {["s-home", "s-cart", "s-orders", "s-wishlist", "s-profile"].includes(screen) && (
+            <ShopBottomNav current={screen}
+                           onTab={(s) => { setHistory([]); setScreen(s); }}
+                           cartCount={shopCartCount(cart)}/>
+          )}
+
           {/* "Back to Hub" pill — only inside a flow, never on the hub itself. */}
           {screen !== "hub" && (
             <a href="#/" className="hub-pill" aria-label="Back to hub">← Hub</a>
@@ -217,7 +288,7 @@ function App() {
 }
 
 /* ------------ Hub: pick a flow to launch ------------------------------ */
-function Hub({ onFlow0, onFlow1 }) {
+function Hub({ onFlow0, onFlow1, onShop }) {
   return (
     <div className="screen">
       <StatusBar />
@@ -237,6 +308,11 @@ function Hub({ onFlow0, onFlow1 }) {
             <span className="hub-card-label">Flow 1</span>
             <span className="hub-card-title">Slot Booking</span>
             <span className="hub-card-sub">Pick a delivery slot from the weekly grid.</span>
+          </button>
+          <button type="button" className="hub-card" onClick={onShop}>
+            <span className="hub-card-label">Flow 2</span>
+            <span className="hub-card-title">Shop &amp; Book</span>
+            <span className="hub-card-sub">Browse groceries, build a cart, and book delivery before or after checkout.</span>
           </button>
         </div>
       </div>
