@@ -180,15 +180,15 @@ function F0Rank({ days, times, value, onChange, onBack, onNext }) {
     hint={null}
     onBack={onBack} onNext={onNext}
     nextLabel="Finish"
-    canContinue={value.length === 3}>
+    canContinue={value.length >= 1}>
       <div id="rank-counter" style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         fontFamily: "var(--font-ui)", fontSize: 14, color: "var(--text-soft)",
         marginBottom: 4
       }}>
-        <span>Optional - helps us prioritize</span>
+        <span>Pick up to 3 — helps us prioritize</span>
         <span style={{
-          color: value.length === 3 ? "var(--green-deep)" : "var(--text-soft)",
+          color: value.length >= 1 ? "var(--green-deep)" : "var(--text-soft)",
           fontWeight: 700
         }}>{value.length}/3 selected</span>
       </div>
@@ -269,7 +269,7 @@ function F0Complete({ topPicks, onContinue }) {
             </div>
           </div>
 
-          <BtnPrimary full onClick={onContinue}>Continue to Slot Booking</BtnPrimary>
+          <BtnPrimary full onClick={onContinue}>Continue shopping</BtnPrimary>
         </div>
       </div>
       <style>{`@keyframes slideIn { from { transform: translateY(8px); } to { transform: none; } }`}</style>

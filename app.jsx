@@ -11,7 +11,7 @@ const SCREENS = [
   // Flow 0
   "f0-splash", "f0-welcome", "f0-days", "f0-times", "f0-rank", "f0-complete",
   // Flow 1
-  "f1-landing", "f1-grid", "f1-confirm", "f1-error", "f1-autolearn",
+  "f1-landing", "f1-grid", "f1-confirm", "f1-success", "f1-error", "f1-autolearn",
 ];
 const SCREEN_LABELS = {
   "hub":         "Hub",
@@ -24,8 +24,9 @@ const SCREEN_LABELS = {
   "f1-landing":  "1.1 Your Preferred Slot",
   "f1-grid":     "1.2 Slot Grid",
   "f1-confirm":  "1.3 Confirm",
-  "f1-error":    "1.4 Slot Taken",
-  "f1-autolearn":"1.5 Auto-Learn",
+  "f1-success":  "1.4 Slot Booked",
+  "f1-error":    "1.5 Slot Taken",
+  "f1-autolearn":"1.6 Auto-Learn",
 };
 
 // Resolve current hash → { mode, screen }.
@@ -48,6 +49,8 @@ function App() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pickedSlot, setPickedSlot] = useState(null);
   const [history, setHistory] = useState([]);
+  const [weekOffset, setWeekOffset] = useState(0); // days from "today"
+  const [autoLearnOpen, setAutoLearnOpen] = useState(false);
 
   // Keep React state in sync with the URL hash (forward/back, manual edits, Hub pill).
   useEffect(() => {
@@ -88,8 +91,9 @@ function App() {
   // Default top picks for the complete screen
   useEffect(() => {
     if (screen === "f0-complete") {
-      if (ranking.length === 3) {
-        // resolve labels from ranking ids "<day>-<timeId>"
+      if (ranking.length >= 1) {
+        // resolve labels from ranking ids "<day>-<timeId>" — use however many
+        // the user actually picked (1, 2, or 3)
         const labels = ranking.map(id => {
           const [d, t] = id.split("-");
           const tinfo = F0_TIMES.find(x => x.id === t);
@@ -143,6 +147,7 @@ function App() {
       case "f1-grid":
         return <F1Grid onBack={goBack}
                        onOpenFilters={() => setFiltersOpen(true)}
+                       weekOffset={weekOffset}
                        onContinue={(slot) => {
                          setPickedSlot({ dateLabel: "Thursday, May 22", time: slot?.time ?? "7:00pm - 9:00pm", price: slot?.price ?? "£3.00" });
                          go("f1-confirm");
@@ -152,8 +157,15 @@ function App() {
         return <F1Confirm slot={pickedSlot}
                           onBack={goBack}
                           onChange={() => go("f1-grid")}
-                          onCheckout={() => go("f1-autolearn")}
+                          onCheckout={() => go("f1-success")}
                           onTimeout={() => go("f1-error")}/>;
+      case "f1-success":
+        return <F1Success slot={pickedSlot}
+                          onContinue={() => {
+                            goToHub();
+                            // Let the hub fade in first, then surface the prompt.
+                            setTimeout(() => setAutoLearnOpen(true), 240);
+                          }}/>;
       case "f1-error":
         return <F1Error onBack={goBack}
                         onTryAgain={() => go("f1-grid")}
@@ -182,7 +194,15 @@ function App() {
           {/* Filters bottom sheet floats over the grid */}
           <F1FiltersSheet open={filtersOpen}
                           onClose={() => setFiltersOpen(false)}
-                          onApply={() => setFiltersOpen(false)}/>
+                          onApply={() => setFiltersOpen(false)}
+                          weekOffset={weekOffset}
+                          setWeekOffset={setWeekOffset}/>
+
+          {/* Auto-learn prompt — floats over whatever screen is current.
+              Opens when the user clicks "Continue Shopping" on F1Success. */}
+          <F1AutoLearnPrompt open={autoLearnOpen}
+                             onAccept={() => setAutoLearnOpen(false)}
+                             onDecline={() => setAutoLearnOpen(false)}/>
 
           {/* "Back to Hub" pill — only inside a flow, never on the hub itself. */}
           {screen !== "hub" && (

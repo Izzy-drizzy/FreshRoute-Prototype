@@ -1,14 +1,30 @@
 // Flow 1 — Slot booking
 // landing → grid → (filters) → confirm → (error) → autolearn
 
-const F1_DAYS = [
-{ abbr: "TODAY", date: "May 21" },
-{ abbr: "TUE", date: "May 22" },
-{ abbr: "WED", date: "May 23" },
-{ abbr: "THU", date: "May 24" },
-{ abbr: "FRI", date: "May 25" },
-{ abbr: "SAT", date: "May 26" },
-{ abbr: "SUN", date: "May 27" }];
+// Reference "today" for the demo. Building Date objects per render lets the
+// week range shift with the weekOffset filter without touching the rest of
+// the flow's logic.
+const F1_TODAY = new Date(2026, 4, 25); // May 25, 2026
+const F1_DAY_ABBRS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+const F1_MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function daysForWeek(offsetDays) {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(F1_TODAY);
+    d.setDate(F1_TODAY.getDate() + offsetDays + i);
+    const isToday = offsetDays === 0 && i === 0;
+    return {
+      abbr: isToday ? "TODAY" : F1_DAY_ABBRS[d.getDay()],
+      date: `${F1_MONTHS[d.getMonth()]} ${d.getDate()}`,
+    };
+  });
+}
+
+const F1_WEEK_OPTIONS = [
+  { offset: 0,  label: "This week" },
+  { offset: 7,  label: "Next week" },
+  { offset: 14, label: "In 2 weeks" },
+];
 
 
 const F1_SLOTS_2H = [
@@ -26,6 +42,31 @@ const F1_SLOTS_1H = [
 { time: "08:00 PM - 09:00 PM", price: "£5", avail: true, eco: true },
 { time: "09:00 PM - 10:00 PM", price: "£5", avail: true }];
 
+// Deterministic per-day variation: same day index always produces the same
+// availability/eco distribution, so navigating away and back stays consistent.
+function mulberry32(seed) {
+  return function () {
+    seed = (seed + 0x6D2B79F5) >>> 0;
+    let t = seed;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function slotsForDay(base, mode, dayIdx, weekOffset = 0) {
+  // mix mode + weekOffset into seed so each (week, day, mode) combo is unique
+  const rng = mulberry32(
+    dayIdx * 137 + (mode === "2h" ? 7 : 23) + weekOffset * 911
+  );
+  return base.map((s) => {
+    const r = rng();
+    // ~55% available, ~30% sold out, ~15% available + eco
+    const avail = r > 0.30;
+    const eco = avail && r > 0.85;
+    return { ...s, avail, eco: eco || undefined };
+  });
+}
+
 
 /* ---- Landing (Personalized) ------------------------------------ */
 function F1Landing({ onBook, onBrowse, onBack }) {
@@ -41,9 +82,9 @@ function F1Landing({ onBook, onBrowse, onBack }) {
         <div className="card-pref" style={{
           animation: "cardIn 400ms cubic-bezier(.2,1.1,.4,1)"
         }}>
-          <div className="pref-badge" style={{ fontFamily: "Switzer", fontWeight: "400", width: "182px" }}>
-            <span className="ico"><IconUser /></span>
-            YOUR PREFERRED SLOT
+          <div className="pref-badge">
+            <span className="ico"><img src="assets/badge-icon.svg" alt="" width="14" height="14"/></span>
+            Your preferred slot
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -83,12 +124,25 @@ function PrefRow({ label, val }) {
 }
 
 /* ---- Grid ------------------------------------------------------ */
-function F1Grid({ onContinue, onBack, onOpenFilters, onSlotConflict }) {
+function F1Grid({ onContinue, onBack, onOpenFilters, onSlotConflict, weekOffset = 0 }) {
   const [mode, setMode] = useState("2h"); // 2h | 1h
-  const [dayIdx, setDayIdx] = useState(3); // THU
+  const [dayIdx, setDayIdx] = useState(0); // first day of the visible week
   const [chip, setChip] = useState(new Set()); // active filter chips
   const [picked, setPicked] = useState(null);
-  const slots = mode === "2h" ? F1_SLOTS_2H : F1_SLOTS_1H;
+
+  const days = useMemo(() => daysForWeek(weekOffset), [weekOffset]);
+  const slots = useMemo(
+    () => slotsForDay(mode === "2h" ? F1_SLOTS_2H : F1_SLOTS_1H, mode, dayIdx, weekOffset),
+    [mode, dayIdx, weekOffset]
+  );
+
+  // When the week range changes, reset to the first day of the new week and
+  // drop any stale slot selection.
+  useEffect(() => { setDayIdx(0); setPicked(null); }, [weekOffset]);
+
+  // Clear any picked slot when day or mode changes so a stale index can't
+  // carry across to a different slot list.
+  const selectDay = (i) => { setPicked(null); setDayIdx(i); };
 
   const toggleChip = (c) => {
     const n = new Set(chip);
@@ -119,16 +173,16 @@ function F1Grid({ onContinue, onBack, onOpenFilters, onSlotConflict }) {
             <button onClick={onOpenFilters}
             style={{
               height: 38, padding: "0 16px",
-              borderRadius: 14,
-              background: "var(--green-deep)",
-              color: "var(--lime)",
+              borderRadius: 999,
+              background: "transparent",
+              color: "var(--green-deep)",
               border: "1px solid var(--green-deep)",
               display: "flex", alignItems: "center", gap: 6,
               cursor: "pointer",
               fontFamily: "var(--font-body)", fontSize: 12,
               flexShrink: 0
             }}>
-              <IconFilter />
+              <IconFilter color="var(--green-deep)" />
               Filters
             </button>
           </div>
@@ -149,7 +203,7 @@ function F1Grid({ onContinue, onBack, onOpenFilters, onSlotConflict }) {
         </div>
 
         {/* duration toggle */}
-        <div className="toggle-2" style={{ marginTop: 20 }} onClick={() => setMode(mode === "2h" ? "1h" : "2h")}>
+        <div className="toggle-2" style={{ marginTop: 20 }} onClick={() => { setPicked(null); setMode(mode === "2h" ? "1h" : "2h"); }}>
           <div className="toggle-2-knob" style={{ transform: mode === "2h" ? "translateX(0)" : "translateX(100%)" }} />
           <div className="toggle-2-opt" style={{ color: mode === "2h" ? "var(--green-deep)" : "#fff" }}>2-Hour</div>
           <div className="toggle-2-opt" style={{ color: mode === "1h" ? "var(--green-deep)" : "#fff" }}>1-Hour</div>
@@ -157,9 +211,9 @@ function F1Grid({ onContinue, onBack, onOpenFilters, onSlotConflict }) {
 
         {/* day pills */}
         <div style={{ display: "flex", gap: 4, marginTop: 28 }}>
-          {F1_DAYS.map((d, i) =>
-          <div key={i} className={"day-pill" + (i === dayIdx ? " active" : "") + (i === 0 ? " today" : "")}
-          onClick={() => setDayIdx(i)}>
+          {days.map((d, i) =>
+          <div key={i} className={"day-pill" + (i === dayIdx ? " active" : "")}
+          onClick={() => selectDay(i)}>
               <span style={{ fontSize: 8.5 }}>{d.abbr}</span>
             </div>
           )}
@@ -209,7 +263,7 @@ function F1Grid({ onContinue, onBack, onOpenFilters, onSlotConflict }) {
 }
 
 /* ---- Filters Sheet --------------------------------------------- */
-function F1FiltersSheet({ open, onClose, onApply }) {
+function F1FiltersSheet({ open, onClose, onApply, weekOffset = 0, setWeekOffset }) {
   const [hideUnavail, setHideUnavail] = useState(true);
   const [tod, setTod] = useState(new Set(["morning"]));
   const [special, setSpecial] = useState(new Set(["eco"]));
@@ -242,6 +296,19 @@ function F1FiltersSheet({ open, onClose, onApply }) {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div>
+            <div style={{ fontFamily: "var(--font-body)", fontSize: 16, color: "var(--green-deep)", marginBottom: 16, fontWeight: 400 }}>Date</div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {F1_WEEK_OPTIONS.map((w) =>
+                <div key={w.offset}
+                     className={"chip" + (weekOffset === w.offset ? "" : " off")}
+                     onClick={() => setWeekOffset?.(w.offset)}>
+                  {w.label}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div>
             <div className="h-card" style={{ marginBottom: 16, fontFamily: "Switzer", fontSize: "16px", fontWeight: "400", letterSpacing: "0px" }}>Quick Filter</div>
             <div style={{ display: "flex", gap: 8 }}>
@@ -323,13 +390,13 @@ function F1Confirm({ slot, onChange, onCheckout, onBack, onTimeout }) {
         </div>
 
         <div className="card-pref-dark">
-          <div className="pref-badge lime" style={{ width: "99px" }}>
-            <span className="ico"><IconUser color="rgb(28,92,66)" /></span>
-            Your Slot
+          <div className="pref-badge lime">
+            <span className="ico"><img src="assets/badge-icon-alt.svg" alt="" width="14" height="14"/></span>
+            Your slot
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div className="h-card" style={{ color: "var(--lime)", fontSize: "28px" }}>
+            <div className="h-card" style={{ color: "#fff", fontSize: "28px" }}>
               {slot?.dateLabel ?? "Thursday, May 22"}
             </div>
             <div style={{
@@ -442,6 +509,63 @@ function F1Error({ onTryAgain, onBrowse, onPick, onBack }) {
 
 }
 
+/* ---- Slot Booked Success --------------------------------------- */
+// Positive counterpart to F1Error. Anchor image is a placeholder
+// (complete.jpg) — swap when final art lands.
+function F1Success({ slot, onContinue }) {
+  return (
+    <div className="screen">
+      <StatusBar />
+      <div className="screen-body" style={{ padding: 0 }}>
+        <div style={{
+          margin: "0 5px",
+          height: 201,
+          borderRadius: 20,
+          border: "0.5px solid var(--border-sage)",
+          backgroundImage: "linear-gradient(rgba(156,175,166,0.15), rgba(156,175,166,0.15)), url(assets/complete.jpg)",
+          backgroundSize: "cover", backgroundPosition: "center",
+          position: "relative"
+        }}>
+          <div style={{
+            position: "absolute", left: 16, top: 16,
+            background: "var(--green-deep)", color: "#fff",
+            padding: "6px 12px", borderRadius: 14,
+            fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
+            display: "flex", gap: 6, alignItems: "center"
+          }}>
+            <span>✓</span> Booked
+          </div>
+        </div>
+
+        <div style={{ padding: "36px 20px 0", display: "flex", flexDirection: "column", gap: 32 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <h2 className="h-section" style={{ margin: 0 }}>Your slot is booked</h2>
+              <p style={{ margin: 0, fontFamily: "var(--font-body)", fontSize: 14, color: "var(--text-mid)" }}>
+                We'll send a reminder before your delivery window.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--green-deep)", fontWeight: 500 }}>
+                Booking
+              </div>
+              <div className="slot-card available" style={{ minHeight: 70, cursor: "default" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <span style={{ fontSize: 14, color: "var(--text-dark)" }}>{slot?.time ?? "7:00pm - 9:00pm"}</span>
+                  <span style={{ fontSize: 13, color: "var(--text-mid)" }}>{slot?.dateLabel ?? "Thursday, May 22"}</span>
+                </div>
+                <span style={{ fontWeight: 500 }}>{slot?.price ?? "£3.00"}</span>
+              </div>
+            </div>
+          </div>
+
+          <BtnPrimary full onClick={onContinue}>Continue Shopping</BtnPrimary>
+        </div>
+      </div>
+    </div>);
+}
+
 /* ---- Auto-Learning ---------------------------------------------- */
 function F1AutoLearn({ onAccept, onDecline, onBack }) {
   return (
@@ -456,9 +580,9 @@ function F1AutoLearn({ onAccept, onDecline, onBack }) {
           marginTop: 16,
           animation: "cardIn 380ms cubic-bezier(.2,1.1,.4,1)", borderWidth: "1px", gap: "24px"
         }}>
-          <div className="pref-badge" style={{ fontFamily: "Switzer", fontWeight: "500", width: "185px" }}>
-            <span className="ico"><IconSpark /></span>
-            YOUR PREFERRED SLOT
+          <div className="pref-badge">
+            <span className="ico"><img src="assets/badge-icon.svg" alt="" width="14" height="14"/></span>
+            Your preferred slot
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div className="h-card" style={{ width: "309px", fontSize: "24px" }}>We've learned your preferences</div>
@@ -479,12 +603,48 @@ function F1AutoLearn({ onAccept, onDecline, onBack }) {
         </div>
 
         <div style={{ marginTop: 31 }}>
-          <BtnPrimary full onClick={onAccept}>Continue to Slot Booking</BtnPrimary>
+          <BtnPrimary full onClick={onAccept}>Continue shopping</BtnPrimary>
         </div>
       </div>
     </div>);
 
 }
+
+/* ---- Auto-Learn Prompt (modal overlay) -------------------------- */
+// Floats over whatever screen is underneath (typically the hub when arriving
+// from F1Success). Reuses the autolearn card body inside a centered modal.
+function F1AutoLearnPrompt({ open, onAccept, onDecline }) {
+  return (
+    <>
+      <div className={"sheet-backdrop" + (open ? " show" : "")} onClick={onDecline} />
+      <div className={"autolearn-prompt" + (open ? " show" : "")}
+           role="dialog" aria-modal="true" aria-label="Updated preferences">
+        <div className="card-pref" style={{ borderWidth: "1px", gap: 24 }}>
+          <div className="pref-badge">
+            <span className="ico"><img src="assets/badge-icon.svg" alt="" width="14" height="14"/></span>
+            Your preferred slot
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div className="h-card" style={{ fontSize: 24 }}>We've learned your preferences</div>
+            <div style={{ color: "var(--text-dark)", letterSpacing: "-0.04em", fontFamily: "Switzer", fontSize: 14, fontWeight: 400, lineHeight: 1.3 }}>
+              Based on your history, we've updated your preferences.
+            </div>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+            <PrefColumn title="Before" muted items={["1. Thu Eve", "2. Wed Eve", "3. Sat Aft"]} />
+            <PrefColumn title="After" items={["1. Thu 6-8", "2. Wed 6-8", "3. Sat 2-4"]} />
+          </div>
+
+          <div style={{ display: "flex", gap: 12 }}>
+            <BtnTertiary style={{ flex: 1 }} onClick={onDecline}>No, Thanks</BtnTertiary>
+            <BtnPrimary style={{ flex: 1 }} onClick={onAccept}>Keep Changes</BtnPrimary>
+          </div>
+        </div>
+      </div>
+    </>);
+}
+
 function PrefColumn({ title, items, muted }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
@@ -510,4 +670,4 @@ function PrefColumn({ title, items, muted }) {
 
 }
 
-Object.assign(window, { F1Landing, F1Grid, F1FiltersSheet, F1Confirm, F1Error, F1AutoLearn });
+Object.assign(window, { F1Landing, F1Grid, F1FiltersSheet, F1Confirm, F1Success, F1Error, F1AutoLearn, F1AutoLearnPrompt });
