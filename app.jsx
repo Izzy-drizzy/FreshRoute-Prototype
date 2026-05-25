@@ -1,12 +1,20 @@
-// Root App — wires flow 0 → flow 1 into a single prototype.
+// Root App — hub screen + Flow 0 and Flow 1 as independent paths.
+//
+// Routes (hash-based, works on any static host):
+//   #/         → Hub
+//   #/flow0    → Onboarding (splash → welcome → days → times → rank → complete)
+//   #/flow1    → Slot booking (landing → grid → confirm → autolearn / error)
 
 const SCREENS = [
+  // Hub
+  "hub",
   // Flow 0
   "f0-splash", "f0-welcome", "f0-days", "f0-times", "f0-rank", "f0-complete",
   // Flow 1
   "f1-landing", "f1-grid", "f1-confirm", "f1-error", "f1-autolearn",
 ];
 const SCREEN_LABELS = {
+  "hub":         "Hub",
   "f0-splash":   "0.1 Splash",
   "f0-welcome":  "0.2 Welcome",
   "f0-days":     "0.3 Days · Step 1",
@@ -20,11 +28,39 @@ const SCREEN_LABELS = {
   "f1-autolearn":"1.5 Auto-Learn",
 };
 
+// Resolve current hash → { mode, screen }.
+// mode tells flow components how to behave at exit points.
+function routeFromHash() {
+  const h = (window.location.hash || "").replace(/^#\/?/, "").toLowerCase();
+  if (h === "flow0") return { mode: "flow0", screen: "f0-splash" };
+  if (h === "flow1") return { mode: "flow1", screen: "f1-landing" };
+  return { mode: "hub", screen: "hub" };
+}
+
+function goToHub() { window.location.hash = "#/"; }
+function goToFlow0() { window.location.hash = "#/flow0"; }
+function goToFlow1() { window.location.hash = "#/flow1"; }
+
 function App() {
-  const [screen, setScreen] = useState("f0-splash");
+  const initial = useMemo(() => routeFromHash(), []);
+  const [mode, setMode] = useState(initial.mode);
+  const [screen, setScreen] = useState(initial.screen);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [pickedSlot, setPickedSlot] = useState(null);
   const [history, setHistory] = useState([]);
+
+  // Keep React state in sync with the URL hash (forward/back, manual edits, Hub pill).
+  useEffect(() => {
+    const onHash = () => {
+      const next = routeFromHash();
+      setMode(next.mode);
+      setScreen(next.screen);
+      setHistory([]);
+      setFiltersOpen(false);
+    };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
 
   // collected preferences across flow 0
   const [days, setDays] = useState([]);
@@ -70,13 +106,19 @@ function App() {
     }
   }, [screen, ranking]);
 
+  // In single-flow modes the "exit" actions return to the hub instead of
+  // cascading into the other flow.
+  const exitToFlow1 = mode === "flow0" ? goToHub : () => go("f1-landing");
+
   // Render current screen
   const node = useMemo(() => {
     switch (screen) {
+      case "hub":
+        return <Hub onFlow0={goToFlow0} onFlow1={goToFlow1}/>;
       case "f0-splash":
         return <F0Splash onDone={() => setScreen("f0-welcome")}/>;
       case "f0-welcome":
-        return <F0Welcome onStart={() => go("f0-days")} onSkip={() => go("f1-landing")}/>;
+        return <F0Welcome onStart={() => go("f0-days")} onSkip={exitToFlow1}/>;
       case "f0-days":
         return <F0Days value={days} onChange={setDays}
                        onBack={goBack}
@@ -90,7 +132,7 @@ function App() {
                        onBack={goBack}
                        onNext={() => go("f0-complete")}/>;
       case "f0-complete":
-        return <F0Complete topPicks={topPicks} onContinue={() => go("f1-landing")}/>;
+        return <F0Complete topPicks={topPicks} onContinue={exitToFlow1}/>;
       case "f1-landing":
         return <F1Landing onBack={goBack}
                           onBook={() => {
@@ -127,7 +169,7 @@ function App() {
       default:
         return null;
     }
-  }, [screen, days, times, ranking, topPicks, pickedSlot, go, goBack]);
+  }, [screen, mode, days, times, ranking, topPicks, pickedSlot, go, goBack, exitToFlow1]);
 
   return (
     <div className="stage">
@@ -141,10 +183,43 @@ function App() {
           <F1FiltersSheet open={filtersOpen}
                           onClose={() => setFiltersOpen(false)}
                           onApply={() => setFiltersOpen(false)}/>
+
+          {/* "Back to Hub" pill — only inside a flow, never on the hub itself. */}
+          {screen !== "hub" && (
+            <a href="#/" className="hub-pill" aria-label="Back to hub">← Hub</a>
+          )}
         </div>
       </div>
 
-      <TweaksHostProto current={screen} jump={jump} reset={() => { setHistory([]); setScreen("f0-splash"); }}/>
+      <TweaksHostProto current={screen} jump={jump} reset={goToHub}/>
+    </div>
+  );
+}
+
+/* ------------ Hub: pick a flow to launch ------------------------------ */
+function Hub({ onFlow0, onFlow1 }) {
+  return (
+    <div className="screen">
+      <StatusBar />
+      <div className="screen-body" style={{ padding: "30px 20px 24px", overflowY: "auto", display: "flex", flexDirection: "column", justifyContent: "center", gap: 28 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 48, color: "var(--green-deep)", margin: 0, letterSpacing: "-0.04em", lineHeight: 1 }}>FreshRoute</h1>
+          <p style={{ margin: 0, fontFamily: "var(--font-body)", fontSize: 16, color: "var(--text-mid)" }}>Pick a flow to launch.</p>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <button type="button" className="hub-card" onClick={onFlow0}>
+            <span className="hub-card-label">Flow 0</span>
+            <span className="hub-card-title">Onboarding</span>
+            <span className="hub-card-sub">Set delivery preferences across six screens.</span>
+          </button>
+          <button type="button" className="hub-card" onClick={onFlow1}>
+            <span className="hub-card-label">Flow 1</span>
+            <span className="hub-card-title">Slot Booking</span>
+            <span className="hub-card-sub">Pick a delivery slot from the weekly grid.</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -187,7 +262,7 @@ function TweaksHostProto({ current, jump, reset }) {
       </TweakSection>
 
       <TweakSection label="Prototype">
-        <TweakButton label="Restart from splash" onClick={reset}/>
+        <TweakButton label="Back to hub" onClick={reset}/>
       </TweakSection>
     </TweaksPanel>
   );

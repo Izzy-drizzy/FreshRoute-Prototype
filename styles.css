@@ -593,6 +593,71 @@ body {
 .chip-stack .sub { font-size: 12px; color: var(--lime); font-weight: 300; }
 .chip-stack.off .sub { color: var(--text-soft); }
 
+/* Hub ---------------------------------------------------------------- */
+.hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: var(--card-pale);
+  border: 1px solid var(--border-sage);
+  font-family: var(--font-body);
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+.hub-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  background: #ddf3d7;
+}
+.hub-card:active { transform: translateY(0); }
+.hub-card-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green-deep);
+  opacity: 0.7;
+}
+.hub-card-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--green-deep);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.hub-card-sub {
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.4;
+}
+
+/* Floating "back to hub" pill ---------------------------------------- */
+.hub-pill {
+  position: absolute;
+  top: 60px;
+  right: 12px;
+  z-index: 110;
+  padding: 6px 12px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.85);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-sage);
+  color: var(--green-deep);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  line-height: 1;
+}
+.hub-pill:hover { background: #fff; }
+
 /* Mobile: drop the iPhone frame and fill the viewport --------------- */
 @media (max-width: 600px) {
   .stage {
@@ -615,4 +680,6 @@ body {
   .phone-notch { display: none; }
   .statusbar { display: none; }
   .screen-body { inset: 0; }
+  /* status bar is hidden — sit the pill closer to the top edge */
+  .hub-pill { top: calc(env(safe-area-inset-top, 0px) + 12px); }
 }
