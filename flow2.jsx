@@ -2,13 +2,56 @@
 // Browse → product detail → cart → either book a delivery slot then checkout,
 // or check out first and pick a slot afterwards.
 
+/* Minimalist flat icons. Single fill, sized 16, color inherits from chip. */
+const CatIcon = {
+  all: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="3" rx="1.5" />
+      <rect x="3" y="10.5" width="18" height="3" rx="1.5" />
+      <rect x="3" y="16" width="18" height="3" rx="1.5" />
+    </svg>
+  ),
+  fresh: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M20 4c0 8.5-4 13-9 14-3 .6-6-1.5-6-5 0-4 3-7 7-8 3-.8 6-1 8-1z" />
+      <path d="M5 20l8-9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    </svg>
+  ),
+  meats: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M15 3a6 6 0 0 1 6 6c0 3-2 5-5 5-1.5 0-2.5.5-3 1.5l-3 3a3 3 0 1 1-4-4l3-3c1-.5 1.5-1.5 1.5-3 0-3 2-5.5 4.5-5.5z" />
+    </svg>
+  ),
+  bakery: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M4 11c0-3 2.5-5 5.5-5h5C17.5 6 20 8 20 11c0 1.6-1 3-2.4 3.6L17 20a1 1 0 0 1-1 .9H8a1 1 0 0 1-1-.9l-.6-5.4C5 14 4 12.6 4 11z" />
+      <path d="M9 12v6M12 12v6M15 12v6" stroke="#ffffff22" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  ),
+  grains: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 3v18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+      <path d="M12 6c-2-1.5-4-1.5-5 0 .5 2 2.5 3 5 3zM12 6c2-1.5 4-1.5 5 0-.5 2-2.5 3-5 3z" />
+      <path d="M12 10c-2-1.5-4-1.5-5 0 .5 2 2.5 3 5 3zM12 10c2-1.5 4-1.5 5 0-.5 2-2.5 3-5 3z" />
+      <path d="M12 14c-2-1.5-4-1.5-5 0 .5 2 2.5 3 5 3zM12 14c2-1.5 4-1.5 5 0-.5 2-2.5 3-5 3z" />
+    </svg>
+  ),
+  organic: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 21v-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+      <path d="M12 14c0-4-3-7-7-7 0 4 3 7 7 7z" />
+      <path d="M12 14c0-4 3-7 7-7 0 4-3 7-7 7z" />
+    </svg>
+  ),
+};
+
 const SHOP_CATEGORIES = [
-  { id: "all",     label: "All",     emoji: "🥗" },
-  { id: "fresh",   label: "Fresh",   emoji: "🥦" },
-  { id: "meats",   label: "Meats",   emoji: "🥩" },
-  { id: "bakery",  label: "Bakery",  emoji: "🍞" },
-  { id: "grains",  label: "Grains",  emoji: "🌾" },
-  { id: "organic", label: "Organic", emoji: "🌱" },
+  { id: "all",     label: "All",     icon: "all" },
+  { id: "fresh",   label: "Fresh",   icon: "fresh" },
+  { id: "meats",   label: "Meats",   icon: "meats" },
+  { id: "bakery",  label: "Bakery",  icon: "bakery" },
+  { id: "grains",  label: "Grains",  icon: "grains" },
+  { id: "organic", label: "Organic", icon: "organic" },
 ];
 
 const SHOP_PRODUCTS = [
@@ -81,7 +124,9 @@ function ShopHome({ onOpenProduct }) {
             <button key={c.id}
                     onClick={() => setCatId(c.id)}
                     className={"shop-cat-chip" + (c.id === catId ? " active" : "")}>
-              <span style={{ fontSize: 16, lineHeight: 1 }}>{c.emoji}</span>
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16 }}>
+                {CatIcon[c.icon]}
+              </span>
               <span>{c.label}</span>
             </button>
           )}
@@ -570,6 +615,7 @@ function ShopBottomNav({ current, onTab, cartCount }) {
 }
 
 Object.assign(window, {
+  CatIcon,
   SHOP_CATEGORIES, SHOP_PRODUCTS, SHOP_DELIVERY_FEE,
   SHOP_ORDERS, SHOP_WISHLIST_IDS, SHOP_PROFILE, SHOP_TABS,
   shopCartLineItems, shopCartSubtotal, shopCartCount,
