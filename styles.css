@@ -697,6 +697,13 @@ body {
   display: grid;
   place-items: center;
   background: linear-gradient(135deg, #eef9e6, #d8efd0);
+  overflow: hidden;
+}
+.shop-product-img {
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  display: block;
 }
 .shop-card-badge {
   position: absolute;
@@ -735,6 +742,13 @@ body {
   display: grid;
   place-items: center;
   border: 1px solid var(--border-sage);
+  overflow: hidden;
+}
+.shop-hero-img {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  display: block;
 }
 
 /* Shop: tab screens share padding (room for the bottom nav) --------- */
@@ -863,6 +877,13 @@ body {
   background: linear-gradient(135deg, #eef9e6, #d8efd0);
   display: grid;
   place-items: center;
+  overflow: hidden;
+}
+.shop-cart-img {
+  width: 86%;
+  height: 86%;
+  object-fit: contain;
+  display: block;
 }
 .shop-cart-name {
   font-family: var(--font-display);
